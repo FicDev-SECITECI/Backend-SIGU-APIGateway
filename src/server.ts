@@ -42,6 +42,15 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
+app.get("/", (_req: Request, res: Response) => {
+  res.json({
+    status: "ok",
+    message:
+      "Bem-vindo ao API Gateway do sistema de Gestão de Unidades. Acesse a documentação para mais informações.",
+    documentation: "https://api-gateway.unidades.com.br/api/v1/docs",
+  });
+});
+
 // Health check endpoint
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok", message: "API Gateway está em execução" });
