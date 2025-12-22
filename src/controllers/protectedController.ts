@@ -8,7 +8,7 @@ import { AuthenticatedRequest } from '../types';
  * @access  Private (Admin)
  */
 export const getAllUsers = async (
-  req: AuthenticatedRequest,
+  _req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
   try {

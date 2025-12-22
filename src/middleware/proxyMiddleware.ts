@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import axios, { AxiosError } from 'axios';
 import { ServicesConfig, getServiceConfig } from '../config/services';
 import { AuthenticatedRequest } from '../types';
@@ -15,7 +15,7 @@ export interface ProxyOptions {
 export const createProxy = (options: ProxyOptions) => {
   const { serviceName, pathPrefix, stripPrefix = false } = options;
 
-  return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  return async (req: AuthenticatedRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const serviceConfig = getServiceConfig(serviceName);
       

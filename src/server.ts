@@ -60,16 +60,16 @@ app.use(`${API_PREFIX}/infraestrutura`, infraestruturaRoutes);
 app.use(`${API_PREFIX}/localizacao`, localizacaoRoutes);
 
 // 404 handler
-app.use((req: Request, res: Response) => {
+app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: "Rota não encontrada" });
 });
 
 // Error handler
 const errorHandler: ErrorRequestHandler = (
   err: Error,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   console.error("Error:", err);
   const status = (err as any).status || 500;
