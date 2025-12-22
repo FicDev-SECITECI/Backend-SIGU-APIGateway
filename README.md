@@ -42,11 +42,13 @@ A Node.js Express server implementation of an API Gateway with JWT-based user au
 ## Installation
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Create a `.env` file in the root directory (copy from `.env.example`):
+
 ```bash
 PORT=3000
 NODE_ENV=development
@@ -62,6 +64,7 @@ API_PREFIX=/api/v1
 ### Development
 
 For development with auto-reload:
+
 ```bash
 npm run dev
 ```
@@ -69,11 +72,13 @@ npm run dev
 ### Production
 
 Build the TypeScript code:
+
 ```bash
 npm run build
 ```
 
 Start the server:
+
 ```bash
 npm start
 ```
@@ -83,16 +88,19 @@ The server will start on `http://localhost:3000` (or the PORT specified in `.env
 ## Testing
 
 Run all tests:
+
 ```bash
 npm test
 ```
 
 Run tests in watch mode:
+
 ```bash
 npm run test:watch
 ```
 
 Generate coverage report:
+
 ```bash
 npm run test:coverage
 ```
@@ -104,11 +112,13 @@ The coverage report will be available in the `coverage/` directory.
 ### Public Endpoints
 
 #### Health Check
+
 ```
 GET /health
 ```
 
 #### Register User
+
 ```
 POST /api/v1/auth/register
 Content-Type: application/json
@@ -122,6 +132,7 @@ Content-Type: application/json
 ```
 
 #### Login
+
 ```
 POST /api/v1/auth/login
 Content-Type: application/json
@@ -133,6 +144,7 @@ Content-Type: application/json
 ```
 
 #### Get Current User (Protected)
+
 ```
 GET /api/v1/auth/me
 Authorization: Bearer <token>
@@ -141,29 +153,34 @@ Authorization: Bearer <token>
 ### Protected Endpoints
 
 All protected endpoints require the `Authorization` header:
+
 ```
 Authorization: Bearer <your-jwt-token>
 ```
 
 #### Get User Profile
+
 ```
 GET /api/v1/profile
 Authorization: Bearer <token>
 ```
 
 #### Dashboard
+
 ```
 GET /api/v1/dashboard
 Authorization: Bearer <token>
 ```
 
 #### Get All Users (Admin Only)
+
 ```
 GET /api/v1/users
 Authorization: Bearer <admin-token>
 ```
 
 #### Admin Only Endpoint
+
 ```
 GET /api/v1/admin-only
 Authorization: Bearer <admin-token>
@@ -172,6 +189,7 @@ Authorization: Bearer <admin-token>
 ## Example Usage with cURL
 
 ### Register a new user:
+
 ```bash
 curl -X POST http://localhost:3000/api/v1/auth/register \
   -H "Content-Type: application/json" \
@@ -183,6 +201,7 @@ curl -X POST http://localhost:3000/api/v1/auth/register \
 ```
 
 ### Login:
+
 ```bash
 curl -X POST http://localhost:3000/api/v1/auth/login \
   -H "Content-Type: application/json" \
@@ -193,6 +212,7 @@ curl -X POST http://localhost:3000/api/v1/auth/login \
 ```
 
 ### Access protected route:
+
 ```bash
 curl -X GET http://localhost:3000/api/v1/profile \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
@@ -201,6 +221,7 @@ curl -X GET http://localhost:3000/api/v1/profile \
 ## Default Admin Credentials
 
 For testing purposes, a default admin user is created:
+
 - **Email:** admin@example.com
 - **Password:** admin123
 
@@ -216,9 +237,11 @@ For testing purposes, a default admin user is created:
 ## Middleware
 
 ### `authenticateToken`
+
 Validates JWT token from the Authorization header and attaches user data to `req.user`.
 
 ### `authorizeRoles(...roles)`
+
 Ensures the authenticated user has one of the specified roles (e.g., 'admin').
 
 ## TypeScript
@@ -228,6 +251,7 @@ This project is written in TypeScript for better type safety and developer exper
 ### Type Definitions
 
 All TypeScript types are defined in `src/types/index.ts`:
+
 - `User` - Internal user type with password
 - `UserPublic` - Public user type without password
 - `UserCreateData` - Data structure for creating users
@@ -259,4 +283,3 @@ All TypeScript types are defined in `src/types/index.ts`:
 ## License
 
 ISC
-

@@ -19,7 +19,7 @@ router.use(
   "/",
   createProxy({
     serviceName: "unidades",
-    pathPrefix: "",
+    pathPrefix: "/api/unidades",
     stripPrefix: false,
   })
 );

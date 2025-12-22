@@ -15,7 +15,7 @@ router.use(
   "/",
   createProxy({
     serviceName: "pessoas",
-    pathPrefix: "",
+    pathPrefix: "/api/pessoas",
     stripPrefix: false,
   })
 );
