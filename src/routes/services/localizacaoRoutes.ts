@@ -1,6 +1,6 @@
-import express from 'express';
-import { authenticateToken } from '../../middleware/auth';
-import { createProxy } from '../../middleware/proxyMiddleware';
+import express from "express";
+import { authenticateToken } from "../../middleware/auth";
+import { createProxy } from "../../middleware/proxyMiddleware";
 
 const router = express.Router();
 
@@ -12,13 +12,12 @@ router.use(authenticateToken);
  * Todas as requisições para /api/v1/localizacao/* serão encaminhadas para o serviço de Localização
  */
 router.use(
-  '/*',
+  "/",
   createProxy({
-    serviceName: 'localizacao',
-    pathPrefix: '/api/v1',
+    serviceName: "localizacao",
+    pathPrefix: "/api/localizacoes",
     stripPrefix: false,
   })
 );
 
 export default router;
-
