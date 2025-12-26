@@ -120,7 +120,7 @@ app.use(`${API_PREFIX}/infraestrutura`, infraestruturaRoutes);
 app.use(`${API_PREFIX}/localizacao`, localizacaoRoutes);
 
 // Outras rotas protegidas específicas
-// Removido: app.use(`${API_PREFIX}`, protectedRoutes); - estava interceptando tudo
+app.use(`${API_PREFIX}`, protectedRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
