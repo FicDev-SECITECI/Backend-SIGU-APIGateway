@@ -53,9 +53,6 @@ app.get("/", (_req: Request, res: Response) => {
   });
 });
 
-// Swagger documentation endpoint
-app.use(`${API_PREFIX}/docs`, swaggerUi.serve, swaggerUi.setup(specs));
-
 // Health check endpoint
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok", message: "API Gateway está em execução" });
@@ -110,17 +107,20 @@ app.get("/health", (_req: Request, res: Response) => {
  *                   example: "API Gateway está em execução"
  */
 
+// Swagger documentation endpoint (deve vir ANTES das rotas protegidas)
+app.use(`${API_PREFIX}/docs`, swaggerUi.serve, swaggerUi.setup(specs));
+
 // Authentication routes
 app.use(`${API_PREFIX}/auth`, authRoutes);
 
-// Protected routes
-app.use(`${API_PREFIX}`, protectedRoutes);
-
-// Microservices proxy routes
+// Microservices proxy routes (estas já incluem autenticação interna)
 app.use(`${API_PREFIX}/unidades`, unidadesRoutes);
 app.use(`${API_PREFIX}/pessoas`, pessoasRoutes);
 app.use(`${API_PREFIX}/infraestrutura`, infraestruturaRoutes);
 app.use(`${API_PREFIX}/localizacao`, localizacaoRoutes);
+
+// Outras rotas protegidas específicas
+// Removido: app.use(`${API_PREFIX}`, protectedRoutes); - estava interceptando tudo
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

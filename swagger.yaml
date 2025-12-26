@@ -1,0 +1,812 @@
+openapi: 3.0.0
+info:
+  title: "API Gateway - Sistema de Gestão de Unidades"
+  version: "1.0.0"
+  description: "API Gateway para o sistema de gestão de unidades com autenticação JWT e roteamento de microserviços"
+  contact:
+    name: "Equipe SIGU"
+    email: "contato@sigu.com.br"
+
+servers:
+  - url: "https://seciteci-sigu-api-gateway.qmono1.easypanel.host/"
+    description: "Servidor de produção"
+  - url: "http://localhost:3000"
+    description: "Servidor de desenvolvimento"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Token JWT obtido através do endpoint /api/v1/auth/login"
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: "johndoe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        role:
+          type: string
+          enum: ["user", "admin"]
+          example: "user"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-12-01T10:00:00.000Z"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        password:
+          type: string
+          example: "password123"
+
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: "johndoe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        password:
+          type: string
+          minLength: 6
+          example: "password123"
+        role:
+          type: string
+          enum: ["user", "admin"]
+          example: "user"
+
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Login realizado com sucesso"
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Mensagem de erro"
+
+    ValidationError:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              msg:
+                type: string
+                example: "Campo obrigatório"
+              param:
+                type: string
+                example: "email"
+              location:
+                type: string
+                example: "body"
+
+security:
+  - BearerAuth: []
+
+paths:
+  /:
+    get:
+      summary: "Página inicial da API"
+      description: "Retorna informações básicas sobre a API Gateway"
+      tags: ["Sistema"]
+      responses:
+        "200":
+          description: "Informações da API retornadas com sucesso"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  message:
+                    type: string
+                    example: "Bem-vindo ao API Gateway do sistema de Gestão de Unidades. Acesse a documentação para mais informações."
+                  documentation:
+                    type: string
+                    example: "https://seciteci-sigu-api-gateway.qmono1.easypanel.host/api/v1/docs"
+
+  /health:
+    get:
+      summary: "Verificar saúde da API"
+      description: "Endpoint para verificar se a API Gateway está funcionando corretamente"
+      tags: ["Sistema"]
+      responses:
+        "200":
+          description: "API funcionando corretamente"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  message:
+                    type: string
+                    example: "API Gateway está em execução"
+
+  /api/v1/auth/register:
+    post:
+      summary: "Registrar novo usuário"
+      description: "Cria uma nova conta de usuário no sistema"
+      tags: ["Autenticação"]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+            example:
+              username: "johndoe"
+              email: "john@example.com"
+              password: "password123"
+              role: "user"
+      responses:
+        "201":
+          description: "Usuário registrado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: "Dados inválidos ou usuário já existe"
+          content:
+            application/json:
+              oneOf:
+                - $ref: "#/components/schemas/ValidationError"
+                - $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: "Erro interno do servidor"
+
+  /api/v1/auth/login:
+    post:
+      summary: "Fazer login"
+      description: "Autentica um usuário e retorna um token JWT"
+      tags: ["Autenticação"]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              email: "john@example.com"
+              password: "password123"
+      responses:
+        "200":
+          description: "Login realizado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: "Dados inválidos"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        "401":
+          description: "Credenciais inválidas"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: "Erro interno do servidor"
+
+  /api/v1/auth/me:
+    get:
+      summary: "Obter perfil do usuário atual"
+      description: "Retorna as informações do usuário autenticado"
+      tags: ["Autenticação"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Perfil do usuário retornado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: "Token não fornecido ou inválido"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: "Usuário não encontrado"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: "Erro interno do servidor"
+
+  /api/v1/users:
+    get:
+      summary: "Listar todos os usuários (apenas admin)"
+      description: "Retorna uma lista de todos os usuários cadastrados no sistema. Requer privilégios de administrador."
+      tags: ["Usuários"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Lista de usuários retornada com sucesso"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "403":
+          description: "Acesso negado - requer privilégios de administrador"
+        "500":
+          description: "Erro interno do servidor"
+
+  /api/v1/profile:
+    get:
+      summary: "Obter perfil do usuário atual"
+      description: "Retorna as informações detalhadas do usuário atualmente autenticado"
+      tags: ["Usuários"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Perfil do usuário retornado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Usuário não encontrado"
+        "500":
+          description: "Erro interno do servidor"
+
+  /api/v1/dashboard:
+    get:
+      summary: "Painel de controle"
+      description: "Retorna informações gerais do sistema para usuários autenticados"
+      tags: ["Sistema"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Dados do painel retornados com sucesso"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Bem-vindo ao painel"
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      email:
+                        type: string
+                        example: "user@example.com"
+                      role:
+                        type: string
+                        example: "user"
+                  data:
+                    type: object
+                    properties:
+                      stats:
+                        type: object
+                        properties:
+                          totalUsers:
+                            type: integer
+                            example: 10
+                          activeSessions:
+                            type: integer
+                            example: 1
+        "401":
+          description: "Token não fornecido ou inválido"
+        "500":
+          description: "Erro interno do servidor"
+
+  /api/v1/admin-only:
+    get:
+      summary: "Endpoint exclusivo para administradores"
+      description: "Endpoint de exemplo que só pode ser acessado por usuários com privilégios de administrador"
+      tags: ["Sistema"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Acesso concedido para administradores"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Este é um endpoint exclusivo para administradores"
+                  adminInfo:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      email:
+                        type: string
+                        example: "admin@example.com"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "403":
+          description: "Acesso negado - requer privilégios de administrador"
+        "500":
+          description: "Erro interno do servidor"
+
+  /api/v1/unidades:
+    get:
+      summary: "Listar todas as unidades"
+      description: "Retorna uma lista de todas as unidades cadastradas no sistema"
+      tags: ["Unidades"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Lista de unidades retornada com sucesso"
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "Resposta do microserviço de Unidades"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "503":
+          description: "Serviço de Unidades indisponível"
+    post:
+      summary: "Criar nova unidade"
+      description: "Cria uma nova unidade no sistema"
+      tags: ["Unidades"]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Dados da unidade a ser criada"
+      responses:
+        "201":
+          description: "Unidade criada com sucesso"
+        "400":
+          description: "Dados inválidos"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "503":
+          description: "Serviço de Unidades indisponível"
+
+  /api/v1/unidades/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: "UUID da unidade"
+        example: "5c00827c-91ff-4260-92b2-f3e2a2ee0fdc"
+    get:
+      summary: "Obter unidade por ID"
+      description: "Retorna os detalhes de uma unidade específica"
+      tags: ["Unidades"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Unidade encontrada"
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "Dados da unidade"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Unidade não encontrada"
+        "503":
+          description: "Serviço de Unidades indisponível"
+    put:
+      summary: "Atualizar unidade"
+      description: "Atualiza os dados de uma unidade existente"
+      tags: ["Unidades"]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Dados atualizados da unidade"
+      responses:
+        "200":
+          description: "Unidade atualizada com sucesso"
+        "400":
+          description: "Dados inválidos"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Unidade não encontrada"
+        "503":
+          description: "Serviço de Unidades indisponível"
+    delete:
+      summary: "Excluir unidade"
+      description: "Remove uma unidade do sistema"
+      tags: ["Unidades"]
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: "Unidade excluída com sucesso"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Unidade não encontrada"
+        "503":
+          description: "Serviço de Unidades indisponível"
+
+  /api/v1/pessoas:
+    get:
+      summary: "Listar todas as pessoas"
+      description: "Retorna uma lista de todas as pessoas cadastradas no sistema"
+      tags: ["Pessoas"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Lista de pessoas retornada com sucesso"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "503":
+          description: "Serviço de Pessoas indisponível"
+    post:
+      summary: "Criar nova pessoa"
+      description: "Cria uma nova pessoa no sistema"
+      tags: ["Pessoas"]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Dados da pessoa a ser criada"
+      responses:
+        "201":
+          description: "Pessoa criada com sucesso"
+        "400":
+          description: "Dados inválidos"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "503":
+          description: "Serviço de Pessoas indisponível"
+
+  /api/v1/pessoas/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: "UUID da pessoa"
+        example: "5c00827c-91ff-4260-92b2-f3e2a2ee0fdc"
+    get:
+      summary: "Obter pessoa por ID"
+      description: "Retorna os detalhes de uma pessoa específica"
+      tags: ["Pessoas"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Pessoa encontrada"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Pessoa não encontrada"
+        "503":
+          description: "Serviço de Pessoas indisponível"
+    put:
+      summary: "Atualizar pessoa"
+      description: "Atualiza os dados de uma pessoa existente"
+      tags: ["Pessoas"]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Dados atualizados da pessoa"
+      responses:
+        "200":
+          description: "Pessoa atualizada com sucesso"
+        "400":
+          description: "Dados inválidos"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Pessoa não encontrada"
+        "503":
+          description: "Serviço de Pessoas indisponível"
+    delete:
+      summary: "Excluir pessoa"
+      description: "Remove uma pessoa do sistema"
+      tags: ["Pessoas"]
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: "Pessoa excluída com sucesso"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Pessoa não encontrada"
+        "503":
+          description: "Serviço de Pessoas indisponível"
+
+  /api/v1/infraestrutura:
+    get:
+      summary: "Listar todas as infraestruturas"
+      description: "Retorna uma lista de todas as infraestruturas cadastradas no sistema"
+      tags: ["Infraestrutura"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Lista de infraestruturas retornada com sucesso"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "503":
+          description: "Serviço de Infraestrutura indisponível"
+    post:
+      summary: "Criar nova infraestrutura"
+      description: "Cria uma nova infraestrutura no sistema"
+      tags: ["Infraestrutura"]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Dados da infraestrutura a ser criada"
+      responses:
+        "201":
+          description: "Infraestrutura criada com sucesso"
+        "400":
+          description: "Dados inválidos"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "503":
+          description: "Serviço de Infraestrutura indisponível"
+
+  /api/v1/infraestrutura/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: "UUID da infraestrutura"
+        example: "5c00827c-91ff-4260-92b2-f3e2a2ee0fdc"
+    get:
+      summary: "Obter infraestrutura por ID"
+      description: "Retorna os detalhes de uma infraestrutura específica"
+      tags: ["Infraestrutura"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Infraestrutura encontrada"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Infraestrutura não encontrada"
+        "503":
+          description: "Serviço de Infraestrutura indisponível"
+    put:
+      summary: "Atualizar infraestrutura"
+      description: "Atualiza os dados de uma infraestrutura existente"
+      tags: ["Infraestrutura"]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Dados atualizados da infraestrutura"
+      responses:
+        "200":
+          description: "Infraestrutura atualizada com sucesso"
+        "400":
+          description: "Dados inválidos"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Infraestrutura não encontrada"
+        "503":
+          description: "Serviço de Infraestrutura indisponível"
+    delete:
+      summary: "Excluir infraestrutura"
+      description: "Remove uma infraestrutura do sistema"
+      tags: ["Infraestrutura"]
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: "Infraestrutura excluída com sucesso"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Infraestrutura não encontrada"
+        "503":
+          description: "Serviço de Infraestrutura indisponível"
+
+  /api/v1/localizacao:
+    get:
+      summary: "Listar todas as localizações"
+      description: "Retorna uma lista de todas as localizações cadastradas no sistema"
+      tags: ["Localização"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Lista de localizações retornada com sucesso"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "503":
+          description: "Serviço de Localização indisponível"
+    post:
+      summary: "Criar nova localização"
+      description: "Cria uma nova localização no sistema"
+      tags: ["Localização"]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Dados da localização a ser criada"
+      responses:
+        "201":
+          description: "Localização criada com sucesso"
+        "400":
+          description: "Dados inválidos"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "503":
+          description: "Serviço de Localização indisponível"
+
+  /api/v1/localizacao/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: "UUID da localização"
+        example: "5c00827c-91ff-4260-92b2-f3e2a2ee0fdc"
+    get:
+      summary: "Obter localização por ID"
+      description: "Retorna os detalhes de uma localização específica"
+      tags: ["Localização"]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Localização encontrada"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Localização não encontrada"
+        "503":
+          description: "Serviço de Localização indisponível"
+    put:
+      summary: "Atualizar localização"
+      description: "Atualiza os dados de uma localização existente"
+      tags: ["Localização"]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Dados atualizados da localização"
+      responses:
+        "200":
+          description: "Localização atualizada com sucesso"
+        "400":
+          description: "Dados inválidos"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Localização não encontrada"
+        "503":
+          description: "Serviço de Localização indisponível"
+    delete:
+      summary: "Excluir localização"
+      description: "Remove uma localização do sistema"
+      tags: ["Localização"]
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: "Localização excluída com sucesso"
+        "401":
+          description: "Token não fornecido ou inválido"
+        "404":
+          description: "Localização não encontrada"
+        "503":
+          description: "Serviço de Localização indisponível"
