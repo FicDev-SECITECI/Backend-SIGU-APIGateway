@@ -26,6 +26,7 @@ import unidadesRoutes from "./routes/services/unidadesRoutes";
 import pessoasRoutes from "./routes/services/pessoasRoutes";
 import infraestruturaRoutes from "./routes/services/infraestruturaRoutes";
 import localizacaoRoutes from "./routes/services/localizacaoRoutes";
+import { swaggerUi, specs } from "./config/swagger";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -47,14 +48,67 @@ app.get("/", (_req: Request, res: Response) => {
     status: "ok",
     message:
       "Bem-vindo ao API Gateway do sistema de Gestão de Unidades. Acesse a documentação para mais informações.",
-    documentation: "https://api-gateway.unidades.com.br/api/v1/docs",
+    documentation:
+      "https://seciteci-sigu-api-gateway.qmono1.easypanel.host/api/v1/docs",
   });
 });
+
+// Swagger documentation endpoint
+app.use(`${API_PREFIX}/docs`, swaggerUi.serve, swaggerUi.setup(specs));
 
 // Health check endpoint
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok", message: "API Gateway está em execução" });
 });
+
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Página inicial da API
+ *     description: Retorna informações básicas sobre a API Gateway
+ *     tags: [Sistema]
+ *     responses:
+ *       200:
+ *         description: Informações da API retornadas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "ok"
+ *                 message:
+ *                   type: string
+ *                   example: "Bem-vindo ao API Gateway do sistema de Gestão de Unidades. Acesse a documentação para mais informações."
+ *                 documentation:
+ *                   type: string
+ *                   example: "https://api-gateway.unidades.com.br/api/v1/docs"
+ */
+
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Verificar saúde da API
+ *     description: Endpoint para verificar se a API Gateway está funcionando corretamente
+ *     tags: [Sistema]
+ *     responses:
+ *       200:
+ *         description: API funcionando corretamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "ok"
+ *                 message:
+ *                   type: string
+ *                   example: "API Gateway está em execução"
+ */
 
 // Authentication routes
 app.use(`${API_PREFIX}/auth`, authRoutes);
