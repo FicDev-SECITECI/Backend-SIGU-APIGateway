@@ -395,116 +395,167 @@ paths:
 
   /api/v1/unidades:
     get:
-      summary: "Listar todas as unidades"
-      description: "Retorna uma lista de todas as unidades cadastradas no sistema"
-      tags: ["Unidades"]
-      security:
-        - BearerAuth: []
+      tags:
+        - Unidades
+      summary: Listar unidades
+      description: Retorna uma lista paginada de unidades com filtros opcionais
+      parameters:
+        - name: tipo
+          in: query
+          description: Filtrar por tipo de unidade
+          schema:
+            type: string
+            example: filial
+        - name: situacao
+          in: query
+          description: Filtrar por situação
+          schema:
+            type: string
+            enum: [ATIVO, INATIVO]
+            default: ATIVO
+        - name: busca
+          in: query
+          description: Buscar por nome ou sigla
+          schema:
+            type: string
+            example: sede
+        - name: page
+          in: query
+          description: Número da página
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Itens por página
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
       responses:
-        "200":
-          description: "Lista de unidades retornada com sucesso"
+        200:
+          description: Lista de unidades retornada com sucesso
           content:
             application/json:
               schema:
                 type: object
-                description: "Resposta do microserviço de Unidades"
-        "401":
-          description: "Token não fornecido ou inválido"
-        "503":
-          description: "Serviço de Unidades indisponível"
+                properties:
+                  unidades:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/UnidadeWithCount"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
     post:
-      summary: "Criar nova unidade"
-      description: "Cria uma nova unidade no sistema"
-      tags: ["Unidades"]
-      security:
-        - BearerAuth: []
+      tags:
+        - Unidades
+      summary: Criar unidade
+      description: Cria uma nova unidade
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              description: "Dados da unidade a ser criada"
+              $ref: "#/components/schemas/UnidadeInput"
       responses:
-        "201":
-          description: "Unidade criada com sucesso"
-        "400":
-          description: "Dados inválidos"
-        "401":
-          description: "Token não fornecido ou inválido"
-        "503":
-          description: "Serviço de Unidades indisponível"
-
-  /api/v1/unidades/{id}:
-    parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-          format: uuid
-        description: "UUID da unidade"
-        example: "5c00827c-91ff-4260-92b2-f3e2a2ee0fdc"
-    get:
-      summary: "Obter unidade por ID"
-      description: "Retorna os detalhes de uma unidade específica"
-      tags: ["Unidades"]
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: "Unidade encontrada"
+        201:
+          description: Unidade criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unidade"
+        400:
+          description: Campos obrigatórios faltando ou situação inválida
           content:
             application/json:
               schema:
                 type: object
-                description: "Dados da unidade"
-        "401":
-          description: "Token não fornecido ou inválido"
-        "404":
-          description: "Unidade não encontrada"
-        "503":
-          description: "Serviço de Unidades indisponível"
+                properties:
+                  error:
+                    type: string
+                  camposObrigatoriosFaltando:
+                    type: array
+                    items:
+                      type: string
+                    description: Lista de campos obrigatórios que estão faltando
+                  camposObrigatorios:
+                    type: array
+                    items:
+                      type: string
+                    description: Lista de todos os campos obrigatórios
+                  camposOpcionais:
+                    type: array
+                    items:
+                      type: string
+                    description: Lista de campos opcionais
+                example:
+                  error: "Campos obrigatórios faltando"
+                  camposObrigatoriosFaltando: ["nome", "tipo"]
+                  camposObrigatorios: ["nome", "sigla", "tipo"]
+                  camposOpcionais: ["localizacao"]
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /api/v1/unidades/{id}:
+    get:
+      tags:
+        - Unidades
+      summary: Buscar unidade por ID
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        200:
+          description: Unidade encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnidadeDetailed"
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
     put:
-      summary: "Atualizar unidade"
-      description: "Atualiza os dados de uma unidade existente"
-      tags: ["Unidades"]
-      security:
-        - BearerAuth: []
+      tags:
+        - Unidades
+      summary: Atualizar unidade
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              description: "Dados atualizados da unidade"
+              $ref: "#/components/schemas/UnidadeInput"
       responses:
-        "200":
-          description: "Unidade atualizada com sucesso"
-        "400":
-          description: "Dados inválidos"
-        "401":
-          description: "Token não fornecido ou inválido"
-        "404":
-          description: "Unidade não encontrada"
-        "503":
-          description: "Serviço de Unidades indisponível"
-    delete:
-      summary: "Excluir unidade"
-      description: "Remove uma unidade do sistema"
-      tags: ["Unidades"]
-      security:
-        - BearerAuth: []
-      responses:
-        "204":
-          description: "Unidade excluída com sucesso"
-        "401":
-          description: "Token não fornecido ou inválido"
-        "404":
-          description: "Unidade não encontrada"
-        "503":
-          description: "Serviço de Unidades indisponível"
+        200:
+          description: Unidade atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unidade"
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
 
+    delete:
+      tags:
+        - Unidades
+      summary: Excluir unidade (soft delete)
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        204:
+          description: Unidade excluída com sucesso
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
   /api/v1/pessoas:
     get:
       summary: "Listar todas as pessoas"
