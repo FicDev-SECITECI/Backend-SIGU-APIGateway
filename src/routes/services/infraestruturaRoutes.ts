@@ -8,10 +8,10 @@ const router = express.Router();
 router.use(authenticateToken);
 
 router.use(
-  "/*",
+  "/",
   createProxy({
     serviceName: "infraestrutura",
-    pathPrefix: "/api/v1",
+    pathPrefix: "/api",
     stripPrefix: false,
   })
 );
