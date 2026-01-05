@@ -1,7 +1,9 @@
 import { Request } from 'express';
+import { Types } from 'mongoose';
 
 export interface User {
-  id: number;
+  _id?: Types.ObjectId;
+  id?: string | number; // Compatibilidade: MongoDB ObjectId como string ou número
   username: string;
   email: string;
   password: string;
@@ -10,7 +12,7 @@ export interface User {
 }
 
 export interface UserPublic {
-  id: number;
+  id: string;
   username: string;
   email: string;
   role: 'user' | 'admin';
@@ -25,7 +27,7 @@ export interface UserCreateData {
 }
 
 export interface JwtPayload {
-  id: number;
+  id: string; // MongoDB ObjectId como string
   email: string;
   role: 'user' | 'admin';
 }

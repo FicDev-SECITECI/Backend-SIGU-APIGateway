@@ -12,7 +12,7 @@ export const getAllUsers = async (
   res: Response
 ): Promise<void> => {
   try {
-    const users = User.getAll();
+    const users = await User.getAll();
     res.json({ users });
   } catch (error) {
     const err = error as Error;
@@ -59,29 +59,35 @@ export const getProfile = async (
  * @route   GET /api/v1/dashboard
  * @access  Private
  */
-export const getDashboard = (
+export const getDashboard = async (
   req: AuthenticatedRequest,
   res: Response
-): void => {
+): Promise<void> => {
   if (!req.user) {
     res.status(401).json({ error: 'Autenticação necessária' });
     return;
   }
 
-  res.json({
-    message: 'Bem-vindo ao painel',
-    user: {
-      id: req.user.id,
-      email: req.user.email,
-      role: req.user.role,
-    },
-    data: {
-      stats: {
-        totalUsers: User.getAll().length,
-        activeSessions: 1,
+  try {
+    const users = await User.getAll();
+    res.json({
+      message: 'Bem-vindo ao painel',
+      user: {
+        id: req.user.id,
+        email: req.user.email,
+        role: req.user.role,
       },
-    },
-  });
+      data: {
+        stats: {
+          totalUsers: users.length,
+          activeSessions: 1,
+        },
+      },
+    });
+  } catch (error) {
+    const err = error as Error;
+    res.status(500).json({ error: err.message });
+  }
 };
 
 /**

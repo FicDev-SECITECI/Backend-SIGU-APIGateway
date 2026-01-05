@@ -21,12 +21,14 @@ import express, {
 } from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth";
-import protectedRoutes from "./routes/protected";
 import unidadesRoutes from "./routes/services/unidadesRoutes";
 import pessoasRoutes from "./routes/services/pessoasRoutes";
 import infraestruturaRoutes from "./routes/services/infraestruturaRoutes";
 import localizacaoRoutes from "./routes/services/localizacaoRoutes";
 import { swaggerUi, specs } from "./config/swagger";
+import { connectMongoDB } from "./config/database";
+import { connectRedis } from "./config/redis";
+import User from "./models/User";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -144,12 +146,32 @@ const errorHandler: ErrorRequestHandler = (
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(
-    `[\x1b[32m OK \x1b[0m] API Gateway server rodando na porta ${PORT}`
-  );
-  console.log(`[INFO] API prefix: ${API_PREFIX}`);
-  console.log(`[INFO] Environment: ${process.env.NODE_ENV || "development"}`);
-});
+// Inicializa conexões e inicia servidor
+const startServer = async () => {
+  try {
+    // Conecta ao MongoDB
+    await connectMongoDB();
+
+    // Conecta ao Redis
+    connectRedis();
+
+    // Inicializa usuário admin
+    await User.initializeAdmin();
+
+    // Inicia servidor
+    app.listen(PORT, () => {
+      console.log(
+        `[\x1b[32m OK \x1b[0m] API Gateway server rodando na porta ${PORT}`
+      );
+      console.log(`[INFO] API prefix: ${API_PREFIX}`);
+      console.log(`[INFO] Environment: ${process.env.NODE_ENV || "development"}`);
+    });
+  } catch (error) {
+    console.error("❌ Erro ao iniciar servidor:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 export default app;
