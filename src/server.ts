@@ -114,7 +114,7 @@ app.get('/health', (_req: Request, res: Response) => {
 })
 
 // Serve raw JSON spec (this is what makes the download link work)
-app.get('/api/v1/docs/swagger.json', (req, res) => {
+app.get('/api/v1/docs/swagger.json', (_req, res) => {
    res.json(specs)
 })
 

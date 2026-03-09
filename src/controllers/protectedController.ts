@@ -12,7 +12,7 @@ export const getAllUsers = async (_req: AuthenticatedRequest, res: Response): Pr
       const users = await User.getAll()
       res.json({ users })
    } catch (error) {
-      const err = error as Error
+      // const err = error as Error
       res.status(500).json({ error: 'Erro ao obter usuários' })
    }
 }
@@ -43,7 +43,7 @@ export const getProfile = async (req: AuthenticatedRequest, res: Response): Prom
          createdAt: user.createdAt,
       })
    } catch (error) {
-      const err = error as Error
+      // const err = error as Error
       res.status(500).json({ error: 'Erro ao obter perfil' })
    }
 }
@@ -76,7 +76,7 @@ export const getDashboard = async (req: AuthenticatedRequest, res: Response): Pr
          },
       })
    } catch (error) {
-      const err = error as Error
+      // const err = error as Error
       res.status(500).json({ error: 'Erro ao obter dashboard' })
    }
 }

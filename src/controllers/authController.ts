@@ -107,7 +107,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
          token,
       })
    } catch (error) {
-      const err = error as Error
+      // const err = error as Error
       res.status(500).json({ error: 'Erro interno do servidor' })
    }
 }
@@ -138,7 +138,7 @@ export const getMe = async (req: AuthenticatedRequest, res: Response): Promise<v
          createdAt: user.createdAt,
       })
    } catch (error) {
-      const err = error as Error
+      // const err = error as Error
       res.status(500).json({ error: 'Erro ao obter perfil' })
    }
 }
