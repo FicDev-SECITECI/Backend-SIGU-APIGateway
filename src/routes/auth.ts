@@ -1,44 +1,39 @@
-import express from "express";
-import { body } from "express-validator";
-import { authenticateToken } from "../middleware/auth";
-import * as authController from "../controllers/authController";
+import express from 'express'
+import { body } from 'express-validator'
+import { authenticateToken } from '../middleware/auth'
+import * as authController from '../controllers/authController'
 
-const router = express.Router();
-
-router.post(
-  "/register",
-  [
-    body("username")
-      .trim()
-      .isLength({ min: 3, max: 30 })
-      .withMessage("O nome de usuário deve ter entre 3 e 30 caracteres"),
-    body("email")
-      .isEmail()
-      .normalizeEmail()
-      .withMessage("Por favor, forneça um email válido"),
-    body("password")
-      .isLength({ min: 6 })
-      .withMessage("A senha deve ter pelo menos 6 caracteres"),
-    body("role")
-      .optional()
-      .isIn(["user", "admin"])
-      .withMessage("A função deve ser 'user' ou 'admin'"),
-  ],
-  authController.register
-);
+const router = express.Router()
 
 router.post(
-  "/login",
-  [
-    body("email")
-      .isEmail()
-      .normalizeEmail()
-      .withMessage("Por favor, forneça um email válido"),
-    body("password").notEmpty().withMessage("A senha é obrigatória"),
-  ],
-  authController.login
-);
+   '/register',
+   [
+      body('username')
+         .trim()
+         .isLength({ min: 3, max: 30 })
+         .withMessage('O nome de usuário deve ter entre 3 e 30 caracteres'),
+      body('email').isEmail().normalizeEmail().withMessage('Por favor, forneça um email válido'),
+      body('password')
+         .isLength({ min: 8 })
+         .withMessage('A senha deve ter pelo menos 8 caracteres')
+         .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+         .withMessage(
+            'A senha deve conter pelo menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial (@$!%*?&)',
+         ),
+      body('role').optional().isIn(['user', 'admin']).withMessage("A função deve ser 'user' ou 'admin'"),
+   ],
+   authController.register,
+)
 
-router.get("/me", authenticateToken, authController.getMe);
+router.post(
+   '/login',
+   [
+      body('email').isEmail().normalizeEmail().withMessage('Por favor, forneça um email válido'),
+      body('password').notEmpty().withMessage('A senha é obrigatória'),
+   ],
+   authController.login,
+)
 
-export default router;
+router.get('/me', authenticateToken, authController.getMe)
+
+export default router
