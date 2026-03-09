@@ -23,7 +23,7 @@ import pessoasRoutes from './routes/services/pessoasRoutes'
 import infraestruturaRoutes from './routes/services/infraestruturaRoutes'
 import localizacaoRoutes from './routes/services/localizacaoRoutes'
 import protectedRoutes from './routes/protected'
-import { swaggerUi, specs } from './config/swagger'
+import { swaggerUi, specs, swaggerUiOptions } from './config/swagger'
 import { connectMongoDB } from './config/database'
 import { connectRedis } from './config/redis'
 import User from './models/User'
@@ -112,6 +112,14 @@ app.get('/', (_req: Request, res: Response) => {
 app.get('/health', (_req: Request, res: Response) => {
    res.json({ status: 'ok', message: 'API Gateway está em execução' })
 })
+
+// Serve raw JSON spec (this is what makes the download link work)
+app.get('/api/v1/docs/swagger.json', (req, res) => {
+   res.json(specs)
+})
+
+// Swagger UI — must come AFTER the JSON route
+app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions))
 
 /**
  * @swagger
