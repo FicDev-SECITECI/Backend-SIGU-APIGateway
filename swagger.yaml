@@ -717,6 +717,32 @@ paths:
          tags: ['Pessoas']
          security:
             - BearerAuth: []
+         parameters:
+            - name: page
+              in: query
+              description: Número da página
+              schema:
+                 type: integer
+                 minimum: 1
+                 default: 1
+              example: 10
+            - name: limit
+              in: query
+              description: Itens por página
+              schema:
+                 type: integer
+                 minimum: 1
+                 maximum: 100
+                 default: 10
+              example: 5
+            - name: orderBy
+              in: query
+              description: Campo para ordenação
+              schema:
+                 type: string
+                 enum: [nome, cpf, email, dataNascimento, createdAt]
+                 default: nome
+              example: nome
          responses:
             '200':
                description: 'Lista de pessoas retornada com sucesso'
@@ -737,6 +763,12 @@ paths:
                   schema:
                      type: object
                      description: 'Dados da pessoa a ser criada'
+                  example:
+                     nome: 'Maria Helena Costa'
+                     cpf: '50055648440'
+                     email: 'Danilo89@bol.com.br'
+                     celular: '(78) 0140-7842'
+                     dataNascimento: '2002-09-10T00:00:00.000Z'
          responses:
             '201':
                description: 'Pessoa criada com sucesso'
@@ -785,6 +817,12 @@ paths:
                   schema:
                      type: object
                      description: 'Dados atualizados da pessoa'
+                  example:
+                     nome: 'Maria Helena Costa'
+                     cpf: '50055648440'
+                     email: 'Danilo89@bol.com.br'
+                     celular: '(78) 0140-7842'
+                     dataNascimento: '2002-09-10T00:00:00.000Z'
          responses:
             '200':
                description: 'Pessoa atualizada com sucesso'
