@@ -26,6 +26,8 @@ import protectedRoutes from './routes/protected'
 import { swaggerUi, specs, swaggerUiOptions } from './config/swagger'
 import { connectMongoDB } from './config/database'
 import { connectRedis } from './config/redis'
+import { logger } from './config/logger'
+import { requestLogging } from './middleware/logging'
 import User from './models/User'
 
 const app = express()
@@ -94,10 +96,7 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
 // Request logging middleware
-app.use((req: Request, _res: Response, next: NextFunction) => {
-   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`)
-   next()
-})
+app.use(requestLogging)
 
 app.get('/', (_req: Request, res: Response) => {
    res.json({
@@ -219,12 +218,17 @@ const startServer = async () => {
 
       // Inicia servidor
       app.listen(PORT, () => {
-         console.log(`[\x1b[32m OK \x1b[0m] API Gateway server rodando na porta ${PORT}`)
-         console.log(`[INFO] API prefix: ${API_PREFIX}`)
-         console.log(`[INFO] Environment: ${process.env.NODE_ENV || 'development'}`)
+         logger.info(
+            {
+               port: PORT,
+               apiPrefix: API_PREFIX,
+               environment: process.env.NODE_ENV || 'development',
+            },
+            'API Gateway server started successfully',
+         )
       })
    } catch (error) {
-      console.error('❌ Erro ao iniciar servidor:', error)
+      logger.error({ error }, 'Failed to start server')
       process.exit(1)
    }
 }

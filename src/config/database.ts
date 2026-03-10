@@ -1,41 +1,42 @@
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
+import { dbLogger } from './logger'
 
-let isConnected = false;
+let isConnected = false
 
 export const connectMongoDB = async (): Promise<void> => {
-  if (isConnected) {
-    console.log('✅ MongoDB já está conectado');
-    return;
-  }
+   if (isConnected) {
+      dbLogger.info('MongoDB já está conectado')
+      return
+   }
 
-  const mongoUri = process.env.MONGO_DB_URL;
+   const mongoUri = process.env.MONGO_DB_URL
 
-  if (!mongoUri) {
-    throw new Error('MONGO_DB_URL não está configurado no arquivo .env');
-  }
+   if (!mongoUri) {
+      dbLogger.error('MONGO_DB_URL não está configurado no arquivo .env')
+      throw new Error('MONGO_DB_URL não está configurado no arquivo .env')
+   }
 
-  try {
-    await mongoose.connect(mongoUri);
-    isConnected = true;
-    console.log('✅ MongoDB conectado com sucesso');
-  } catch (error) {
-    console.error('❌ Erro ao conectar ao MongoDB:', error);
-    throw error;
-  }
-};
+   try {
+      await mongoose.connect(mongoUri)
+      isConnected = true
+      dbLogger.info('MongoDB conectado com sucesso')
+   } catch (error) {
+      dbLogger.error({ error }, 'Erro ao conectar ao MongoDB')
+      throw error
+   }
+}
 
 export const disconnectMongoDB = async (): Promise<void> => {
-  if (!isConnected) {
-    return;
-  }
+   if (!isConnected) {
+      return
+   }
 
-  try {
-    await mongoose.disconnect();
-    isConnected = false;
-    console.log('✅ MongoDB desconectado');
-  } catch (error) {
-    console.error('❌ Erro ao desconectar do MongoDB:', error);
-    throw error;
-  }
-};
-
+   try {
+      await mongoose.disconnect()
+      isConnected = false
+      dbLogger.info('MongoDB desconectado')
+   } catch (error) {
+      dbLogger.error({ error }, 'Erro ao desconectar do MongoDB')
+      throw error
+   }
+}
